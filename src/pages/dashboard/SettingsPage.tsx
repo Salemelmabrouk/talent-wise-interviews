@@ -8,10 +8,14 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { useAuth } from '@/app/core/auth/state/auth.state';
-import { UserRole } from '@/app/core/models/user.model';
+import { UserRole, CandidateUser, RecruiterUser } from '@/app/core/models/user.model';
 
 const SettingsPage = () => {
   const { user } = useAuth();
+
+  // Type guards to check user roles
+  const isCandidate = user?.role === UserRole.CANDIDATE;
+  const isRecruiter = user?.role === UserRole.RECRUITER;
 
   return (
     <DashboardLayout>
@@ -45,28 +49,28 @@ const SettingsPage = () => {
                 <Input id="email" type="email" defaultValue={user?.email} />
               </div>
               
-              {user?.role === UserRole.CANDIDATE && (
+              {isCandidate && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="skills">Skills (comma separated)</Label>
-                    <Input id="skills" defaultValue={user.skills?.join(', ')} />
+                    <Input id="skills" defaultValue={(user as CandidateUser)?.skills?.join(', ')} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="experience">Experience</Label>
-                    <Input id="experience" defaultValue={user.experience} />
+                    <Input id="experience" defaultValue={(user as CandidateUser)?.experience} />
                   </div>
                 </>
               )}
               
-              {user?.role === UserRole.RECRUITER && (
+              {isRecruiter && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="company">Company</Label>
-                    <Input id="company" defaultValue={user.company} />
+                    <Input id="company" defaultValue={(user as RecruiterUser)?.company} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="position">Position</Label>
-                    <Input id="position" defaultValue={user.position} />
+                    <Input id="position" defaultValue={(user as RecruiterUser)?.position} />
                   </div>
                 </>
               )}
@@ -83,7 +87,7 @@ const SettingsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {user?.role === UserRole.CANDIDATE ? (
+              {isCandidate ? (
                 <>
                   <div className="flex items-center justify-between">
                     <div>
@@ -107,7 +111,7 @@ const SettingsPage = () => {
                     <Switch defaultChecked />
                   </div>
                 </>
-              ) : user?.role === UserRole.RECRUITER ? (
+              ) : isRecruiter ? (
                 <>
                   <div className="flex items-center justify-between">
                     <div>
