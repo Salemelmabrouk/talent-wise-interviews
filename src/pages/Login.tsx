@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/core/auth/state/auth.state';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,16 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,14 +34,15 @@ const Login = () => {
         title: "Logged in successfully",
         description: "Welcome back to InterviewAI!",
       });
-      navigate('/dashboard');
+      // Using setTimeout to ensure state updates have propagated
+      setTimeout(() => navigate('/dashboard'), 100);
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: "Please check your credentials and try again.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

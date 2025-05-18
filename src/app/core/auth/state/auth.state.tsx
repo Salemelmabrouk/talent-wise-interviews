@@ -56,7 +56,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Check for saved user in localStorage on initial load
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('user'); // Remove corrupted data
+      }
     }
     setIsLoading(false);
   }, []);
@@ -75,8 +81,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       // Remove password before storing
       const { password: _, ...safeUser } = foundUser;
-      setUser(safeUser);
-      localStorage.setItem('user', JSON.stringify(safeUser));
+      
+      // Clone the user object to ensure it's properly serialized
+      const userToStore = JSON.parse(JSON.stringify(safeUser));
+      
+      setUser(userToStore);
+      localStorage.setItem('user', JSON.stringify(userToStore));
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -95,8 +108,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         createdAt: new Date().toISOString(),
       } as User;
       
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      // Clone the user object to ensure it's properly serialized
+      const userToStore = JSON.parse(JSON.stringify(newUser));
+      
+      setUser(userToStore);
+      localStorage.setItem('user', JSON.stringify(userToStore));
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
